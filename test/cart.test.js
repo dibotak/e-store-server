@@ -1,9 +1,9 @@
 require('dotenv').config();
 const request = require('supertest');
 const app = require('../app');
-const { Product } = require('../models');
+const { Cart } = require('../models');
 
-Product.destroy({
+Cart.destroy({
   where: {},
   truncate: true
 });
@@ -11,10 +11,11 @@ Product.destroy({
 let id = 1;
 const access_token = process.env.testAccessToken;
 
-describe('GET /products', function() {
-  it('get all products', function(done) {
+describe('GET /cart', function() {
+  it('get all cart', function(done) {
     request(app)
-      .get('/products')
+      .get('/cart')
+      .set('access_token', access_token)
       .expect('Content-Type', /json/)
       .then(response => {
         const { status, body } = response;
@@ -25,18 +26,23 @@ describe('GET /products', function() {
         done(err);
       })
   });
+
+  it(`didn't have access`, (status, body) => {
+    request(app)
+      .get('/cart')
+      .expect(401, status)
+      .expect({message: `didn't have access`}, body)
+  });
 });
 
-describe('POST /products', () => {
+describe('POST /cart', () => {
   it('data added', done => {
     const addData = {
-      name: 'ada',
-      image_url: 'ada juga',
-      price: 2000,
-      stock: 10
+      ProductId: 2,
+      amount: 2
     }
     request(app)
-      .post('/products')
+      .post('/cart')
       .set('access_token', access_token)
       .send(addData)
       .expect('Content-Type', /json/)
@@ -44,10 +50,9 @@ describe('POST /products', () => {
         const { status, body } = response;
         id = body.id;
         expect(status).toEqual(201);
-        expect(body).toHaveProperty('name', addData.name);
-        expect(body).toHaveProperty('image_url', addData.image_url);
-        expect(body).toHaveProperty('price', addData.price);
-        expect(body).toHaveProperty('stock', addData.stock);
+        expect(body).toHaveProperty('UserId');
+        expect(body).toHaveProperty('ProductId', addData.ProductId);
+        expect(body).toHaveProperty('amount', addData.amount);
         done();
       })
       .catch(err => {
@@ -57,18 +62,18 @@ describe('POST /products', () => {
 
   it(`didn't have access`, (status, body) => {
     request(app)
-      .post('/products')
+      .post('/cart')
       .expect(401, status)
       .expect({message: `didn't have access`}, body)
   });
 
   it('validation error', done => {
     const addData = {
-      name: '',
-      stock: ''
+      ProductId: '',
+      amount: ''
     }
     request(app)
-      .post('/products')
+      .post('/cart')
       .set('access_token', access_token)
       .send(addData)
       .expect('Content-Type', /json/)
@@ -84,70 +89,24 @@ describe('POST /products', () => {
   });
 });
 
-describe('PUT /products/:id', () => {
-  it('success updated data', done => {
-    const editData = {
-      name: 'berubah',
-      stock: 22,
-      price: 1000,
-      image_url: 'kosong'
-    }
-    request(app)
-      .put('/products/' + id)
-      .set('access_token', access_token)
-      .send(editData)
-      .expect('Content-Type', /json/)
-      .then(response => {
-        const { body, status } = response;
-        expect(200).toEqual(status);
-        expect({message: 'product updated'}).toEqual(body);
-        done();
-      })
-      .catch(err => {
-        done(err);
-      })
-  });
-
+describe('DELETE /cart', () => {
   it(`didn't have access`, (status, body) => {
     request(app)
-      .put('/products/' + id)
-      .expect(401, status)
-      .expect({message: `didn't have access`}, body)
-  });
-
-  it('products not found', done => {
-    request(app)
-      .put('/products/3000')
-      .set('access_token', access_token)
-      .then(response => {
-        const { body, status } = response;
-
-        expect(status).toEqual(404);
-        expect(body).toEqual({message: 'NOT FOUND'});
-        done();
-      })
-      .catch(err => {
-        done(err);
-      })
-  });
-});
-
-describe('DELETE /products/:id', () => {
-  it(`didn't have access`, (status, body) => {
-    request(app)
-    .delete('/products/' + id)
+      .delete('/cart')
+      .send({ id })
       .expect(401, status)
       .expect({message: `didn't have access`}, body)
   });
     
   it('success deleted data', done => {
     request(app)
-      .delete('/products/' + id)
+      .delete('/cart')
       .set('access_token', access_token)
+      .send({ id })
       .expect('Content-Type', /json/)
       .then(response => {
         const { body, status } = response;
-        expect(200).toEqual(status);
+        expect(status).toEqual(200);
         expect(body).toEqual({message: 'product deleted'});
         done();
       })
@@ -158,12 +117,13 @@ describe('DELETE /products/:id', () => {
 
     it('products not found', done => {
     request(app)
-      .delete('/products/3000')
+      .delete('/cart')
       .set('access_token', access_token)
+      .send({ id: 2000 })
       .then(response => {
         const { body, status } = response;
 
-        expect(404).toEqual(status);
+        expect(status).toEqual(404);
         expect(body).toEqual({message: 'NOT FOUND'});
         done();
       })

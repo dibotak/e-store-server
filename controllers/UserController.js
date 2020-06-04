@@ -4,8 +4,9 @@ const { comparePassword, generateToken } = require('../helpers');
 class UserController {
   static register(req, res, next) {
     const { email, password } = req.body;
+    const role = req.userRole;
 
-    User.create({ email, password })
+    User.create({ email, password, role })
     .then(newUser => {
       res.status(201).json(newUser);
     })

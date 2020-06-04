@@ -31,6 +31,22 @@ module.exports = (sequelize, DataTypes) => {
           msg: 'Password cannot empty'
         }
       }
+    },
+    role: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: {
+          msg: 'role cannot empty'
+        },
+        notNull: {
+          msg: 'role cannot empty'
+        },
+        isIn: {
+          args: [['admin', 'customer']],
+          msg: 'invalid role'
+        }
+      }
     }
   }, {
     sequelize,
@@ -42,6 +58,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   User.associate = function(models) {
     // associations can be defined here
+    User.belongsToMany(models.Product, { through: models.Cart });
   };
   return User;
 };
