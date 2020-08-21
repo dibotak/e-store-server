@@ -4,9 +4,15 @@ class CartController {
   static getCart(req, res, next) {
     const { id } = req.userData;
 
-    User.findOne({ where: { id }, include: Product })
+    Cart.findAll({
+      where: {
+        UserId: id
+      },
+      include: [ Product ]
+    })
     .then(data => {
-      res.status(200).json(data.Products);
+      console.log(data);
+      res.status(200).json(data);
     })
     .catch(err => {
       next(err);

@@ -1,6 +1,6 @@
 require('dotenv').config();
 const request = require('supertest');
-const app = require('../app');
+const app = require('../server');
 const { Product } = require('../models');
 
 Product.destroy({

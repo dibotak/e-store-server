@@ -1,7 +1,18 @@
 const { Product } = require('../models');
+const Sequelize = require('sequelize');
 
 class ProductController {
   static getAll(req, res, next) {
+		// let params = {
+		// 	where: {
+		// 		stock: { [Sequelize.Op.gt]: 0 }
+		// 	}
+		// };
+		
+		// if (req.userData) {
+		// 	let params = {};
+		// }
+
     Product.findAll()
     .then(products => {
       res.status(200).json(products);
