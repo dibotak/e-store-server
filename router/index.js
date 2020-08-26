@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const UserController = require('../controllers/UserController');
 const ProductController = require('../controllers/ProductController');
-const CartController = require('../controllers/CartController');
+const OrderController = require('../controllers/OrderController');
 const authentication = require('../middlewares/authentication');
 const { Admin, Customer } = require('../middlewares/userRole');
 
@@ -15,9 +15,9 @@ router.post('/products', ProductController.addData);
 router.put('/products/:id', ProductController.editData);
 router.delete('/products/:id', ProductController.removeData);
 
-router.get('/cart', CartController.getCart);
-router.post('/cart', CartController.addCart);
-router.delete('/cart', CartController.deleteCart);
+router.get('/cart', OrderController.getCart);
+router.post('/cart', OrderController.addToCart);
+router.delete('/cart', OrderController.deleteFromCart);
 
 
 module.exports = router;

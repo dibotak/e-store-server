@@ -1,18 +1,24 @@
 require('dotenv').config();
 const request = require('supertest');
 const app = require('../server');
-const { Cart } = require('../models');
+const { Order } = require('../models');
 
-Cart.destroy({
-  where: {},
-  truncate: true
+beforeAll((done) => {
+  done();
 });
+
+afterAll((done) => {
+  Order.destroy({
+    where: {},
+    truncate: true
+  }).then(done);
+})
 
 let id = 1;
 const access_token = process.env.testAccessToken;
 
 describe('GET /cart', function() {
-  it('get all cart', function(done) {
+  it('get user order', function(done) {
     request(app)
       .get('/cart')
       .set('access_token', access_token)
@@ -36,10 +42,10 @@ describe('GET /cart', function() {
 });
 
 describe('POST /cart', () => {
-  it('data added', done => {
+  it('data added to user cart', done => {
     const addData = {
       ProductId: 2,
-      amount: 2
+      quantity: 2
     }
     request(app)
       .post('/cart')
@@ -51,13 +57,12 @@ describe('POST /cart', () => {
         id = body.id;
         expect(status).toEqual(201);
         expect(body).toHaveProperty('UserId');
-        expect(body).toHaveProperty('ProductId', addData.ProductId);
-        expect(body).toHaveProperty('amount', addData.amount);
+        expect(body).toHaveProperty('status', 'on_cart');
         done();
       })
       .catch(err => {
         done(err);
-      })
+      });
   });
 
   it(`didn't have access`, (status, body) => {
@@ -70,7 +75,7 @@ describe('POST /cart', () => {
   it('validation error', done => {
     const addData = {
       ProductId: '',
-      amount: ''
+      quantity: ''
     }
     request(app)
       .post('/cart')
@@ -107,7 +112,7 @@ describe('DELETE /cart', () => {
       .then(response => {
         const { body, status } = response;
         expect(status).toEqual(200);
-        expect(body).toEqual({message: 'product deleted'});
+        expect(body).toEqual({message: 'order deleted'});
         done();
       })
       .catch(err => {
